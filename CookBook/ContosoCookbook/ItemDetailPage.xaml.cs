@@ -14,12 +14,14 @@
 // places, or events is intended or should be inferred.
 // ----------------------------------------------------------------------------------
 
+using ContosoCookbook.Common;
 using ContosoCookbook.Data;
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -56,6 +58,7 @@ namespace ContosoCookbook
         /// session.  This will be null the first time a page is visited.</param>
         protected override void LoadState(Object navigationParameter, Dictionary<String, Object> pageState)
         {
+            DataTransferManager.GetForCurrentView().DataRequested += OnDataRequested;
             // Allow saved page state to override the initial item to display
             if (pageState != null && pageState.ContainsKey("SelectedItem"))
             {
@@ -69,6 +72,21 @@ namespace ContosoCookbook
             this.flipView.SelectedItem = item;
         }
 
+        private void OnDataRequested(DataTransferManager sender, DataRequestedEventArgs args)
+        {
+            var request = args.Request;
+            var item = (RecipeDataItem)this.flipView.SelectedItem;
+            request.Data.Properties.Title = item.Title;
+            request.Data.Properties.Description = "Recipe ingredients and directions";
+
+            // Share recipe text
+            var recipe = "\r\nINGREDIENTS\r\n";
+            recipe += String.Join("\r\n", item.Ingredients);
+            recipe += ("\r\n\r\nDIRECTIONS\r\n" + item.Directions);
+            request.Data.SetText(recipe);
+
+        }
+
         /// <summary>
         /// Preserves state associated with this page in case the application is suspended or the
         /// page is discarded from the navigation cache.  Values must conform to the serialization
@@ -77,6 +95,7 @@ namespace ContosoCookbook
         /// <param name="pageState">An empty dictionary to be populated with serializable state.</param>
         protected override void SaveState(Dictionary<String, Object> pageState)
         {
+            DataTransferManager.GetForCurrentView().DataRequested -= OnDataRequested;
             var selectedItem = (RecipeDataItem)this.flipView.SelectedItem;
             pageState["SelectedItem"] = selectedItem.UniqueId;
         }
