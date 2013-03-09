@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Search;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -88,6 +89,7 @@ namespace ContosoCookbook
                 }
                 // Load recipe data
                 await RecipeDataSource.LoadLocalDataAsync();
+                SearchPane.GetForCurrentView().SuggestionsRequested += OnSuggestionsRequested;
 
                 // Place the frame in the current Window
                 Window.Current.Content = rootFrame;
@@ -104,6 +106,18 @@ namespace ContosoCookbook
             }
             // Ensure the current window is active
             Window.Current.Activate();
+        }
+
+        private void OnSuggestionsRequested(SearchPane sender, SearchPaneSuggestionsRequestedEventArgs args)
+        {
+            string query = args.QueryText.ToLower();
+            string[] terms = { "salt", "pepper", "water", "egg", "vinegar", "flour", "rice", "sugar", "oil" };
+
+            foreach (var term in terms)
+            {
+                if (term.StartsWith(query))
+                    args.Request.SearchSuggestionCollection.AppendQuerySuggestion(term);
+            }
         }
 
         /// <summary>
