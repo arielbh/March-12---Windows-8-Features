@@ -140,7 +140,20 @@ namespace ContosoCookbook
         /// <param name="args">Details about the activation request.</param>
         protected async override void OnSearchActivated(Windows.ApplicationModel.Activation.SearchActivatedEventArgs args)
         {
-            // TODO: Register the Windows.ApplicationModel.Search.SearchPane.GetForCurrentView().QuerySubmitted
+            // Reinitialize the app if a new instance was launched for search
+            if (args.PreviousExecutionState == ApplicationExecutionState.NotRunning ||
+                args.PreviousExecutionState == ApplicationExecutionState.ClosedByUser ||
+                args.PreviousExecutionState == ApplicationExecutionState.Terminated)
+            {
+                // Load recipe data
+                await RecipeDataSource.LoadLocalDataAsync();
+
+                // Register handler for SuggestionsRequested events from the search pane
+                SearchPane.GetForCurrentView().SuggestionsRequested += OnSuggestionsRequested;
+
+
+            }
+
             // event in OnWindowCreated to speed up searches once the application is already running
 
             // If the Window isn't already using Frame navigation, insert our own Frame
