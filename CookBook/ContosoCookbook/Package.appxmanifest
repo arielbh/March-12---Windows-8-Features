@@ -15,7 +15,7 @@
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="ContosoCookbook.App">
-      <VisualElements DisplayName="Contoso Cookbook" Logo="Assets\Logo.png" SmallLogo="Assets\SmallLogo.png" Description="Contoso Cookbook Application" ForegroundText="light" BackgroundColor="#464646">
+      <VisualElements DisplayName="Contoso Cookbook" Logo="Assets\Logo.png" SmallLogo="Assets\SmallLogo.png" Description="Contoso Cookbook Application" ForegroundText="light" BackgroundColor="#464646" ToastCapable="true">
         <DefaultTile ShowName="allLogos" WideLogo="Assets\WideLogo.png" />
         <SplashScreen Image="Assets\SplashScreen.png" />
       </VisualElements>

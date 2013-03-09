@@ -25,6 +25,8 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage.Streams;
+using Windows.UI.Notifications;
+using Windows.UI.Popups;
 using Windows.UI.StartScreen;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -68,7 +70,7 @@ namespace ContosoCookbook
             }
 
             // TODO: Create an appropriate data model for your problem domain to replace the sample data
-            var item = RecipeDataSource.GetItem((String)navigationParameter);
+            var item = RecipeDataSource.GetItem((String) navigationParameter);
             this.DefaultViewModel["Group"] = item.Group;
             this.DefaultViewModel["Items"] = item.Group.Items;
             this.flipView.SelectedItem = item;
@@ -77,7 +79,7 @@ namespace ContosoCookbook
         private void OnDataRequested(DataTransferManager sender, DataRequestedEventArgs args)
         {
             var request = args.Request;
-            var item = (RecipeDataItem)this.flipView.SelectedItem;
+            var item = (RecipeDataItem) this.flipView.SelectedItem;
             request.Data.Properties.Title = item.Title;
             request.Data.Properties.Description = "Recipe ingredients and directions";
 
@@ -100,26 +102,45 @@ namespace ContosoCookbook
         protected override void SaveState(Dictionary<String, Object> pageState)
         {
             DataTransferManager.GetForCurrentView().DataRequested -= OnDataRequested;
-            var selectedItem = (RecipeDataItem)this.flipView.SelectedItem;
+            var selectedItem = (RecipeDataItem) this.flipView.SelectedItem;
             pageState["SelectedItem"] = selectedItem.UniqueId;
         }
 
         private async void OnPinRecipeButtonClicked(object sender, RoutedEventArgs e)
         {
-            var item = (RecipeDataItem)this.flipView.SelectedItem;
+            var item = (RecipeDataItem) this.flipView.SelectedItem;
             var uri = new Uri(item.TileImagePath.AbsoluteUri);
 
             var tile = new SecondaryTile(
-                    item.UniqueId,              // Tile ID
-                    item.ShortTitle,            // Tile short name
-                    item.Title,                 // Tile display name
-                    item.UniqueId,              // Activation argument
-                    TileOptions.ShowNameOnLogo, // Tile options
-                    uri                         // Tile logo URI
+                item.UniqueId, // Tile ID
+                item.ShortTitle, // Tile short name
+                item.Title, // Tile display name
+                item.UniqueId, // Activation argument
+                TileOptions.ShowNameOnLogo, // Tile options
+                uri // Tile logo URI
                 );
 
             await tile.RequestCreateAsync();
-   
+
+            var notifier = ToastNotificationManager.CreateToastNotifier();
+
+            // Make sure notifications are enabled
+            if (notifier.Setting != NotificationSetting.Enabled)
+            {
+                var dialog = new MessageDialog("Notifications are currently disabled");
+                await dialog.ShowAsync();
+                return;
+            }
+
+            // Get a toast template and insert a text node containing a message
+            var template = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText01);
+            var element = template.GetElementsByTagName("text")[0];
+            element.AppendChild(template.CreateTextNode("Reminder!"));
+
+            // Schedule the toast to appear 30 seconds from now
+            var date = DateTimeOffset.Now.AddSeconds(6);
+            var stn = new ScheduledToastNotification(template, date);
+            notifier.AddToSchedule(stn);
         }
     }
 }
