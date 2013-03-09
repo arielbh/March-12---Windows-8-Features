@@ -24,6 +24,8 @@ using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media.Capture;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Notifications;
 using Windows.UI.Popups;
@@ -46,6 +48,8 @@ namespace ContosoCookbook
     /// </summary>
     public sealed partial class ItemDetailPage : ContosoCookbook.Common.LayoutAwarePage
     {
+        private StorageFile _photo;
+
         public ItemDetailPage()
         {
             this.InitializeComponent();
@@ -76,22 +80,37 @@ namespace ContosoCookbook
             this.flipView.SelectedItem = item;
         }
 
-        private void OnDataRequested(DataTransferManager sender, DataRequestedEventArgs args)
+        void OnDataRequested(DataTransferManager sender, DataRequestedEventArgs args)
         {
             var request = args.Request;
-            var item = (RecipeDataItem) this.flipView.SelectedItem;
+            var item = (RecipeDataItem)this.flipView.SelectedItem;
             request.Data.Properties.Title = item.Title;
-            request.Data.Properties.Description = "Recipe ingredients and directions";
 
-            // Share recipe text
-            var recipe = "\r\nINGREDIENTS\r\n";
-            recipe += String.Join("\r\n", item.Ingredients);
-            recipe += ("\r\n\r\nDIRECTIONS\r\n" + item.Directions);
-            request.Data.SetText(recipe);
+            if (_photo != null)
+            {
+                request.Data.Properties.Description = "Recipe photo";
+                var reference = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(_photo);
+                request.Data.Properties.Thumbnail = reference;
+                request.Data.SetBitmap(reference);
+                _photo = null;
+            }
+            else
+            {
+                request.Data.Properties.Description = "Recipe ingredients and directions";
 
-            var reference = RandomAccessStreamReference.CreateFromUri(new Uri(item.ImagePath.AbsoluteUri));
-            request.Data.Properties.Thumbnail = reference;
+                // Share recipe text
+                var recipe = "\r\nINGREDIENTS\r\n";
+                recipe += String.Join("\r\n", item.Ingredients);
+                recipe += ("\r\n\r\nDIRECTIONS\r\n" + item.Directions);
+                request.Data.SetText(recipe);
+
+                // Share recipe image
+                var reference = RandomAccessStreamReference.CreateFromUri(new Uri(item.ImagePath.AbsoluteUri));
+                request.Data.Properties.Thumbnail = reference;
+                request.Data.SetBitmap(reference);
+            }
         }
+
 
         /// <summary>
         /// Preserves state associated with this page in case the application is suspended or the
@@ -141,6 +160,19 @@ namespace ContosoCookbook
             var date = DateTimeOffset.Now.AddSeconds(6);
             var stn = new ScheduledToastNotification(template, date);
             notifier.AddToSchedule(stn);
+        }
+
+        private async void OnBragClicked(object sender, RoutedEventArgs e)
+        {
+            var camera = new CameraCaptureUI();
+            var file = await camera.CaptureFileAsync(CameraCaptureUIMode.Photo);
+
+            if (file != null)
+            {
+                _photo = file;
+                DataTransferManager.ShowShareUI();
+            }
+
         }
     }
 }

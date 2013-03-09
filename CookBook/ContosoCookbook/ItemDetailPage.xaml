@@ -25,6 +25,12 @@
             <Setter Property="AutomationProperties.Name" Value="Pin"/>
             <Setter Property="Content" Value="&#xE141;"/>
         </Style>
+        <Style x:Key="BragAppBarButtonStyle" TargetType="Button" BasedOn="{StaticResource AppBarButtonStyle}">
+            <Setter Property="AutomationProperties.AutomationId" Value="BragAppBarButton"/>
+            <Setter Property="AutomationProperties.Name" Value="Brag"/>
+            <Setter Property="Content" Value="&#xE170;"/>
+        </Style>
+
     </Page.Resources>
 
     <!--
@@ -276,6 +282,7 @@
                     <Button HorizontalAlignment="Left" Style="{StaticResource PinAppBarButtonStyle}" Click="OnPinRecipeButtonClicked" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right">
+                    <Button HorizontalAlignment="Left" Style="{StaticResource BragAppBarButtonStyle}" Click="OnBragClicked" />
                 </StackPanel>
             </Grid>
         </AppBar>
