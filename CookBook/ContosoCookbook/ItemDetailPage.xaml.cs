@@ -27,6 +27,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Media.Capture;
 using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.UI.Notifications;
 using Windows.UI.Popups;
@@ -171,12 +172,23 @@ namespace ContosoCookbook
             if (file != null)
             {
                 _photo = file;
-                StorageFolder localFolder = ApplicationData.Current.LocalFolder;
-                StorageFile savedFile = await localFolder.CreateFileAsync("test.jpg", CreationCollisionOption.ReplaceExisting);
-                await FileIO.WriteBytesAsync(savedFile, await GetPhotoBytesAsync(_photo));
-                // Load
-                StorageFile loadedFile = await localFolder.GetFileAsync("test.jpg");
-                var buffer = await FileIO.ReadBufferAsync(loadedFile);
+                //StorageFolder localFolder = ApplicationData.Current.LocalFolder;
+                //StorageFile savedFile = await localFolder.CreateFileAsync("test.jpg", CreationCollisionOption.ReplaceExisting);
+                //await FileIO.WriteBytesAsync(savedFile, await GetPhotoBytesAsync(_photo));
+                //// Load
+                //StorageFile loadedFile = await localFolder.GetFileAsync("test.jpg");
+                //var buffer = await FileIO.ReadBufferAsync(loadedFile);
+
+                FileSavePicker savePicker = new FileSavePicker();
+                savePicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+                savePicker.FileTypeChoices.Add("jpeg image", new List<string>() { ".jpeg" });
+                savePicker.SuggestedFileName = "New picture";
+
+                StorageFile ff = await savePicker.PickSaveFileAsync();
+                if (ff != null)
+                {
+                    await _photo.MoveAndReplaceAsync(ff);
+                }
 
                 DataTransferManager.ShowShareUI();
             }
