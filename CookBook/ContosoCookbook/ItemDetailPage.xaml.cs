@@ -102,5 +102,10 @@ namespace ContosoCookbook
             var selectedItem = (RecipeDataItem)this.flipView.SelectedItem;
             pageState["SelectedItem"] = selectedItem.UniqueId;
         }
+
+        private void OnPinRecipeButtonClicked(object sender, RoutedEventArgs e)
+        {
+            
+        }
     }
 }
