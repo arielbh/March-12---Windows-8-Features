@@ -25,6 +25,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage.Streams;
+using Windows.UI.StartScreen;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -103,9 +104,22 @@ namespace ContosoCookbook
             pageState["SelectedItem"] = selectedItem.UniqueId;
         }
 
-        private void OnPinRecipeButtonClicked(object sender, RoutedEventArgs e)
+        private async void OnPinRecipeButtonClicked(object sender, RoutedEventArgs e)
         {
-            
+            var item = (RecipeDataItem)this.flipView.SelectedItem;
+            var uri = new Uri(item.TileImagePath.AbsoluteUri);
+
+            var tile = new SecondaryTile(
+                    item.UniqueId,              // Tile ID
+                    item.ShortTitle,            // Tile short name
+                    item.Title,                 // Tile display name
+                    item.UniqueId,              // Activation argument
+                    TileOptions.ShowNameOnLogo, // Tile options
+                    uri                         // Tile logo URI
+                );
+
+            await tile.RequestCreateAsync();
+   
         }
     }
 }
