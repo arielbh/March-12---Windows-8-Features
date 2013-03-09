@@ -14,6 +14,7 @@
 // places, or events is intended or should be inferred.
 // ----------------------------------------------------------------------------------
 
+using Callisto.Controls;
 using ContosoCookbook.Common;
 
 using System;
@@ -25,6 +26,8 @@ using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Search;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
+using Windows.UI.ApplicationSettings;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -90,6 +93,7 @@ namespace ContosoCookbook
                 // Load recipe data
                 await RecipeDataSource.LoadLocalDataAsync();
                 SearchPane.GetForCurrentView().SuggestionsRequested += OnSuggestionsRequested;
+                SettingsPane.GetForCurrentView().CommandsRequested += OnCommandsRequested;
 
                 // Place the frame in the current Window
                 Window.Current.Content = rootFrame;
@@ -106,6 +110,23 @@ namespace ContosoCookbook
             }
             // Ensure the current window is active
             Window.Current.Activate();
+        }
+
+        private void OnCommandsRequested(SettingsPane sender, SettingsPaneCommandsRequestedEventArgs args)
+        {
+            // Add an About command
+            var about = new SettingsCommand("about", "About", (handler) =>
+            {
+                var settings = new SettingsFlyout();
+                settings.Content = new TextBlock { Text ="Contoso About"};
+                settings.HeaderBrush = new SolidColorBrush(Colors.Aquamarine);
+                settings.Background = new SolidColorBrush(Colors.Aquamarine);
+                settings.HeaderText = "About";
+                settings.IsOpen = true;
+            });
+
+            args.Request.ApplicationCommands.Add(about);
+
         }
 
         private void OnSuggestionsRequested(SearchPane sender, SearchPaneSuggestionsRequestedEventArgs args)
