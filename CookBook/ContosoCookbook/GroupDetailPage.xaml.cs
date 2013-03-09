@@ -14,14 +14,17 @@
 // places, or events is intended or should be inferred.
 // ----------------------------------------------------------------------------------
 
+using System.Collections.ObjectModel;
 using ContosoCookbook.Data;
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Windows.Data.Xml.Dom;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Notifications;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -60,6 +63,25 @@ namespace ContosoCookbook
             var group = RecipeDataSource.GetGroup((String)navigationParameter);
             this.DefaultViewModel["Group"] = group;
             this.DefaultViewModel["Items"] = group.Items;
+
+            RegisterTileNotifications();
+        }
+
+        private void RegisterTileNotifications()
+        {
+            TileUpdateManager.CreateTileUpdaterForApplication().EnableNotificationQueue(true);
+            var items = DefaultViewModel["Items"] as ObservableCollection <RecipeDataItem>;
+            foreach (var item in items.Take(5))
+            {
+                var tileXml = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWideImageAndText01);
+                XmlNodeList tileTextAttributes = tileXml.GetElementsByTagName("text");
+                tileTextAttributes[0].InnerText = item.ShortTitle;
+                XmlNodeList tileImageAttributes = tileXml.GetElementsByTagName("image");
+                ((XmlElement)tileImageAttributes[0]).SetAttribute("src", item.ImagePath.ToString());
+
+                TileNotification tileNotification = new TileNotification(tileXml);
+                TileUpdateManager.CreateTileUpdaterForApplication().Update(tileNotification);
+            }
         }
 
         /// <summary>
