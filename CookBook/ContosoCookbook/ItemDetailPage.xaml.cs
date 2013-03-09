@@ -24,6 +24,7 @@ using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -85,6 +86,8 @@ namespace ContosoCookbook
             recipe += ("\r\n\r\nDIRECTIONS\r\n" + item.Directions);
             request.Data.SetText(recipe);
 
+            var reference = RandomAccessStreamReference.CreateFromUri(new Uri(item.ImagePath.AbsoluteUri));
+            request.Data.Properties.Thumbnail = reference;
         }
 
         /// <summary>
