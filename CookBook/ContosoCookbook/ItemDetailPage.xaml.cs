@@ -14,6 +14,7 @@
 // places, or events is intended or should be inferred.
 // ----------------------------------------------------------------------------------
 
+using System.Threading.Tasks;
 using ContosoCookbook.Common;
 using ContosoCookbook.Data;
 
@@ -170,9 +171,27 @@ namespace ContosoCookbook
             if (file != null)
             {
                 _photo = file;
+                StorageFolder localFolder = ApplicationData.Current.LocalFolder;
+                StorageFile savedFile = await localFolder.CreateFileAsync("test.jpg", CreationCollisionOption.ReplaceExisting);
+                await FileIO.WriteBytesAsync(savedFile, await GetPhotoBytesAsync(_photo));
+                // Load
+                StorageFile loadedFile = await localFolder.GetFileAsync("test.jpg");
+                var buffer = await FileIO.ReadBufferAsync(loadedFile);
+
                 DataTransferManager.ShowShareUI();
             }
 
+        }
+
+        public async Task<byte[]> GetPhotoBytesAsync(StorageFile file)
+        {
+            IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
+            var reader = new DataReader(fileStream.GetInputStreamAt(0));
+            await reader.LoadAsync((uint)fileStream.Size);
+
+            byte[] pixels = new byte[fileStream.Size];
+            reader.ReadBytes(pixels);
+            return pixels;
         }
     }
 }
